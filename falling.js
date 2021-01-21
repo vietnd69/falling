@@ -1,11 +1,14 @@
 class Falling {
-    constructor(doms, imgObj) {
+    constructor(doms, imgObj, ...more) {
         this.eles = document.querySelectorAll(doms)
-        this.fallingObjsCont = 20
+        this.fallingObjsCont = 25
+        this.randomSize = { min: 15, max: 40 }
+        this.wind = { min: 0.8, max: 1.1 }
         this.mouse = {
             x: -100,
             y: -100
         }
+        this.speed = {min: 0.5, max: 4}
         this.canvas = []
         this.minDist = 100
         this.image = new Image()
@@ -13,6 +16,17 @@ class Falling {
         this.objSize = {}
         this.render()
     }
+
+    getRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min) + min);
+    }
+
+    getRandom(min, max) {
+        return Math.floor(Math.random() * (max - min) + min);
+    }
+
     async render() {
         await this.getObjSize()
         // console.log("render")
@@ -33,17 +47,6 @@ class Falling {
             })
         })
             .then(dataSize => this.objSize = dataSize)
-    }
-    
-    setupObj(obj, canvas) {
-        obj.width = Math.floor(Math.random() * 20) + 20;
-        obj.height = this.image.naturalHeight / this.image.naturalWidth * obj.width;
-        obj.startX = Math.floor(Math.random() * canvas.width);
-        obj.startY = 0 - obj.height;
-        obj.speed = Math.floor(Math.random() * 2) + 0.5
-        obj.vY = obj.speed;
-        obj.vX = 0;
-        obj._ratate = Math.floor(Math.random());
     }
 
     creatElement() {
@@ -79,9 +82,9 @@ class Falling {
         for (let i = 0; i < this.fallingObjsCont; i++) {
 
             // console.log(this.objSize.height, this.objSize.height)
-            const fallingObjsWidth = Math.floor(Math.random() * 10) + 20;
+            const fallingObjsWidth = this.getRandomInt(this.randomSize.min, this.randomSize.max)
             const fallingObjsHeight = this.objSize.height / this.objSize.height * fallingObjsWidth
-            const speed = Math.floor(Math.random() * 2) + 0.5
+            const speed = this.getRandomInt(this.speed.min, this.speed.max)
 
             cacheFallingObjs.push({
                 width: fallingObjsWidth,
@@ -91,7 +94,7 @@ class Falling {
                 speed: speed,
                 vY: speed,
                 vX: 0,
-                wind: Math.random() * 1.2 - 0.6,
+                wind: this.getRandom(this.wind.min, this.wind.max),
                 stepSize: (Math.random()) / 20,
                 step: 0,
                 angle: Math.random() * 180 - 90,
@@ -113,7 +116,7 @@ class Falling {
             // window.requestAnimationFrame(() => {this.update(ele.objs, ele.canvas)})
         })
 
-        window.requestAnimationFrame(() => {this.draw()})
+        window.requestAnimationFrame(() => { this.draw() })
     }
 
     drawFallingObjs(objs, ctx) {
@@ -147,14 +150,14 @@ class Falling {
             const dist = Math.sqrt((obj.startX - this.mouse.x) ** 2 + (obj.startY - this.mouse.y) ** 2)
             if (dist < this.minDist) {
                 const force = this.minDist / (dist * dist)
-                const    xcomp = (this.mouse.x - obj.startX) / dist
-                const    ycomp = (this.mouse.y - obj.startY) / dist
-                const    deltaV = force * 2;
+                const xcomp = (this.mouse.x - obj.startX) / dist
+                const ycomp = (this.mouse.y - obj.startY) / dist
+                const deltaV = force * 2;
 
                 obj.vX -= deltaV * xcomp;
                 obj.vY -= deltaV * ycomp;
 
-                    (obj.d * xcomp > 0) && (obj.wind = 0 - obj.wind)
+                (obj.d * xcomp > 0) && (obj.wind = 0 - obj.wind)
             } else {
                 obj.vX *= .98;
 
@@ -185,18 +188,24 @@ class Falling {
             this.mouse.x = e.clientX;
             this.mouse.y = e.clientY;
         })
+        canvas.addEventListener('mouseout', e => {
+            this.mouse.x = -100;
+            this.mouse.y = -100;
+        })
     }
 
     reset(obj, canvas) {
         // console.log("reset")
-        obj.width = Math.floor(Math.random() * 20) + 20;
+        // makeFallingObj(canvas)
+
+        obj.width = this.getRandomInt(this.randomSize.min, this.randomSize.max);
         obj.height = this.image.naturalHeight / this.image.naturalWidth * obj.width;
         obj.startX = Math.floor(Math.random() * canvas.width);
         obj.startY = 0 - obj.height;
         obj.speed = Math.floor(Math.random() * 2) + 0.5
         obj.vY = obj.speed;
         obj.vX = 0;
-        obj._ratate = Math.floor(Math.random());
+        obj._rotate = Math.floor(Math.random());
     }
 }
 
